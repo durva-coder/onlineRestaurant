@@ -11,31 +11,6 @@ const jwt = require('jsonwebtoken');
 
 module.exports = {
   
-    // admin signup 
-    signup: function(req, res){
-        let email = req.body.email;
-        let password = req.body.password;
-        console.log('admin details', req.body);
-
-        Admin.create({
-            email: email,
-            password: password
-        }).fetch().then(result =>{
-            console.log('result', result);
-            const token = jwt.sign({
-                adminId: result.id
-            },
-            'secret'
-            );
-            res.cookie("access_token", token, { // cookie used for signup and logout
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
-            })
-            console.log('token',token);
-            res.ok('signup successful')
-        })
-        
-    },
 
     // admin login 
     login: function(req, res){
