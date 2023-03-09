@@ -7,7 +7,7 @@ module.exports = function(req, res, proceed){
         const token = req.cookies.access_token;
         // if not token then redirect to login page
         if(!token){
-            return res.status(500).json({
+            return res.status(403).json({
                 err: 'failed'
             })
         }

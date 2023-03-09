@@ -20,14 +20,14 @@ module.exports.routes = {
   ***************************************************************************/
 
   // home page
-  '/': { view: 'pages/homepage' },
+  'GET /': { view: 'pages/homepage' },
 
 
   // login
   'POST /login': 'AdminController.login',
 
   // logout
-  '/logout': 'AdminController.logout',
+  'GET /logout': 'AdminController.logout',
 
   // category create
   'POST /create': 'AdminController.create',
@@ -45,8 +45,8 @@ module.exports.routes = {
   // creating a item
   'POST /createItem/:id': 'AdminController.createItem',
 
-  // listing a item
-  'GET /listItem/:id': 'AdminController.listItem',
+  // listing a item category wise, search & pagination
+  'GET /listItem': 'AdminController.listItem',
 
   // updating a item
   'PUT /updateItem/:id': 'AdminController.updateItem',
@@ -57,11 +57,7 @@ module.exports.routes = {
   // showing all items
   'GET /showAllItems': 'AdminController.showAllItems',
 
-  // searching a item
-  'GET /search': 'AdminController.search',
 
-  // pagination
-  'GET /pagination': 'AdminController.pagination',
 
   // showing all items to users
   'GET /showAllItemsToUsers' : 'UserController.showAllItemsToUsers',
