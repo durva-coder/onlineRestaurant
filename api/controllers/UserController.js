@@ -17,7 +17,12 @@ module.exports = {
             item.items.sort((item1, item2) => item1.displayOrder - item2.displayOrder)
             item.totalItems = item.items.length;
         })
-        return res.ok(items)
+        return res.status(200).json({
+            status: 200,
+            data: items,
+            message: 'Show All the Items to users'
+        })
+     
     },
 
 };

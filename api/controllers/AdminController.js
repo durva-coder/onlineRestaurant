@@ -25,12 +25,14 @@ module.exports = {
             // if admin not exists
             if(admin.length == 0){
                 return res.status(403).json({
+                    status: 403,
                     err: 'User not exists'
                 })
             }
             // if having error 
             if(err){
                 return res.status(500).json({
+                    status: 500,
                     err: err
                 })
             }
@@ -50,11 +52,15 @@ module.exports = {
                         httpOnly: true,
                         secure: process.env.NODE_ENV === "production",
                     })
-                    return res.ok("login successful");
+                    return res.status(200).json({
+                        status: 200,
+                        message: 'login successful'
+                    })
 
                 } else {
                     //password is not a match
                     return res.status(500).json({
+                        status: 500,
                         err: 'password not match'
                     })
                     
@@ -67,7 +73,10 @@ module.exports = {
     logout: function(req, res){
         // clear cookie for logout
          res.clearCookie('access_token');
-         return res.ok('logout successfully');
+         return res.status(200).json({
+            status: 200,
+            message: 'logout successfully'
+        })
         
     },
 
@@ -79,6 +88,7 @@ module.exports = {
         // category field is empty or not entered 
         if(!category){
             return res.status(400).json({
+                status: 400,
                 err: 'category not entered'
             })
         }
@@ -89,6 +99,7 @@ module.exports = {
         
         if(item.length > 0){
             return res.status(400).json({
+                status: 400,
                 err: 'Category already exists'
             })
             
@@ -99,7 +110,12 @@ module.exports = {
                 category: category
             }).fetch().then(result =>{
                 console.log('category create',result);
-                return res.ok({ category, message: 'Category created successfully'})
+                return res.status(200).json({
+                    status: 200,
+                    data: result,
+                    message: 'Category created successfully'
+                })
+                
             })
         }
     },
@@ -108,12 +124,18 @@ module.exports = {
     list: function(req, res){
         Category.find({}, function(err, result){
             if(err){
-                return res.json({
+                return res.status(400).json({
+                    status: 400,
                     err: err
                 })
             }
             console.log(result);
-            return res.ok(result)
+            return res.status(200).json({
+                status:200,
+                data: result,
+                message: 'All the Categories'
+            })
+           
         })
     },
 
@@ -124,12 +146,17 @@ module.exports = {
         console.log(id);
         let category = req.body.category;
         console.log(category);
-        let update = await Category.update({id: id})
+        let update = await Category.updateOne({id: id})
         .set({
             category: category
         }).fetch()
         console.log(update);
-        return res.ok({update, message:'updated'})
+        return res.status(200).json({
+            status: 200,
+            data : update,
+            message: 'Updated Sucessfully'
+        })
+      
     },
 
     // deleting a category
@@ -137,8 +164,15 @@ module.exports = {
         // getting category id through params
         let id = req.params.id;
         console.log(id);
+        let category = await Category.find({id: id})
         await Category.destroy({id:id})
-        res.ok('deleted')
+        console.log(category);
+        return res.status(200).json({
+            status: 200,
+            data: category,
+            message: "Deleted Sucessfully"
+        })
+  
     },
 
     // creating a item to particular category
@@ -152,6 +186,7 @@ module.exports = {
         // if name field is empty
         if(!name || !description || !price || !image || !displayOrder){
             return res.status(400).json({
+                status: 400,
                 err: 'All fields are required'
             })
         }
@@ -161,9 +196,18 @@ module.exports = {
         console.log(item);
         if(item.length > 0){
             return res.status(400).json({
+                status:400,
                 err: 'display Order already existing'
             })
             
+        }
+
+        let items = await Item.find({name: name})
+        if(items.length >0){
+            return res.status(400).json({
+                status:400,
+                err: 'Item already existing'
+            })
         }
         // otherwise create a item
         else{
@@ -176,8 +220,11 @@ module.exports = {
                 displayOrder: displayOrder
             }).fetch().then(async result =>{
                 console.log('item create',result);
-
-                return res.ok('item created successfully')
+                return res.status(200).json({
+                    status: 200,
+                    data: result,
+                    message: 'item created successfully'
+                })
             })
         }
     },
@@ -188,14 +235,17 @@ module.exports = {
         let categoryId = req.query.id;
         console.log('ghjhjhk',categoryId);
 
+        // getting item name or search keyword
         const { name } = req.query;
         console.log('uyu',name);
 
-        let page = req.query.page
-        console.log(page);
+        // getting skip & limit for pagination
+        let skip = req.query.skip
+        console.log(skip);
         let limit = req.query.limit
         console.log(limit);
 
+        // show items according to category
         if(categoryId){
             console.log(categoryId);
             // getting all the items 
@@ -209,32 +259,48 @@ module.exports = {
             let totalItems = await Item.count({category: categoryId});
             console.log(totalItems);
             categoryItems.totalItems = totalItems;
-        
-            return res.ok(categoryItems)
-        }
-
-        if(name){
-             // getting all items
-            const result = await Category.find({}).populate('items');
-
-            // searching through filter
-            result.map((category) => {
-                return category.items = category.items.filter((item) => {  
-                    return item.name.includes(name)
-                })
+            
+            return res.status(200).json({
+                status: 200,
+                data: categoryItems,
+                message: "Listing items according to category"
             })
-
-            console.log('jhjkhgjhkkhjh',result);
-            return res.ok(result)
+         
         }
 
-        if(page && limit){
-            let item = await Item.find({limit: limit, skip: page});
-            return res.ok(item)
+        // searching items
+        if(name){
+
+            const result = await Item.find({name : {
+                'contains' : name
+            }});
+
+            console.log(result);
+            return res.status(200).json({
+                status:200,
+                data: result,
+                message: "Searched Items"
+            })
+       
         }
 
+        // Pagination
+        if(skip && limit){
+           
+            let item = await Item.find({}).limit(limit).skip(skip*limit);
+
+            return res.status(200).json({
+                status: 200,
+                data: item,
+                
+            })
+        
+        }
+
+        // otherwise enter any query
         else{
-            return res.json({
+            return res.status(400).json({
+                status:400,
                 message: 'Please enter any query'
             })
         }
@@ -247,9 +313,26 @@ module.exports = {
         let itemId = req.params.id;
         console.log(itemId);
 
-        const {name, description, price, image, category} = req.body;
+        const {name, description, price, image, category, displayOrder} = req.body;
         
         console.log('item',req.body);
+
+        let categoryItem = await Item.findOne({id: itemId})
+        console.log(categoryItem);
+
+        let categoryId = categoryItem.category;
+        console.log(categoryId);
+
+        // checking if displayOrder id already exists in particular category
+        let item = await Item.find().where({category: categoryId, displayOrder: displayOrder})
+        console.log(item);
+        if(item.length > 0){
+            return res.status(400).json({
+                status:400,
+                err: 'display Order already existing'
+            })
+            
+        }
 
         var update = await Item.update({id: itemId})
         .set({
@@ -257,10 +340,16 @@ module.exports = {
             description: description,
             price: price,
             image: image,
-            category: category
+            category: category,
+            displayOrder: displayOrder
         }).fetch()
         console.log('update item', update);
-        return res.ok({update ,message:"Updated"})
+        return res.status(200).json({
+            status: 200,
+            data: update,
+            message: "Item Updated Successfully"
+        })
+        
     },
 
     // deleting a item
@@ -268,9 +357,15 @@ module.exports = {
         // getting a item id through params
         let id = req.params.id;
         console.log(id);
-        var item = await Item.destroy({id:id})
+        let item = await Item.find({id:id})
+        await Item.destroy({id:id})
         console.log( item);
-        return res.ok('deleted')
+        return res.status(200).json({
+            status: 200,
+            data: item,
+            message: "Item deleted Successfully"
+        })
+     
     },
 
     // showing all items
@@ -283,7 +378,11 @@ module.exports = {
             item.items.sort((item1, item2) => item1.displayOrder - item2.displayOrder)
             item.totalItems = item.items.length;
         })
-        return res.ok(items)
+        return res.status(200).json({
+            status: 200,
+            data: items,
+            message: "All the Items"
+        })
     },
 
 
