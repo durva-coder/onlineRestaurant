@@ -63,5 +63,4 @@ module.exports.routes = {
   'GET /showAllItemsToUsers' : 'UserController.showAllItemsToUsers',
 
 
-
 };

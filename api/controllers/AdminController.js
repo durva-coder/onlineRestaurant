@@ -50,7 +50,7 @@ module.exports = {
                     );
                     res.cookie("access_token", token, { // cookie for login and logout
                         httpOnly: true,
-                        secure: process.env.NODE_ENV === "production",
+                        
                     })
                     return res.status(200).json({
                         status: 200,
@@ -385,6 +385,6 @@ module.exports = {
         })
     },
 
-
+   
 };
 
